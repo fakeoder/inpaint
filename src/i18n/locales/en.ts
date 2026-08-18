@@ -1,0 +1,181 @@
+/**
+ * English locale — the base type for all other locales.
+ * Missing keys in any other locale fail at compile time.
+ */
+export const en = {
+  'app.title': 'inpaint',
+
+  'theme.toggle': 'Toggle theme',
+  'lang.toggle': 'Switch language',
+
+  'tool.upload': 'Upload',
+  'tool.brush': 'Brush',
+  'tool.eraser': 'Eraser',
+  'tool.undo': 'Undo',
+  'tool.redo': 'Redo',
+  'tool.clear': 'Clear',
+  'tool.erase': 'Erase',
+
+  'hero.badge': '🛡️ 100% local · no uploads',
+  'hero.title': 'Erase anything from your photos',
+  'hero.sub': 'Remove objects, watermarks, text and people with one brush stroke — powered by AI, running entirely on your device.',
+  'hero.cta': '📁 Choose images',
+  'hero.hint': 'or drop / paste (Ctrl/⌘+V)',
+  'hero.s1': 'Import an image',
+  'hero.s2': 'Paint over what to remove',
+  'hero.s3': 'Erase & download',
+  'import.batchHint': 'Batch import — all images must share the same size',
+
+  'feature.privacy.title': '100% private',
+  'feature.privacy.desc': 'Your images and the AI run only in your browser — nothing is ever uploaded.',
+  'feature.local.title': 'Fully on-device',
+  'feature.local.desc': 'WASM inference, no install, no server — ready in one click.',
+  'feature.hd.title': 'High-resolution',
+  'feature.hd.desc': 'Smart tiling handles multi-megapixel photos smoothly.',
+  'feature.offline.title': 'Offline ready',
+  'feature.offline.desc': 'Models cache locally — erase again without a network.',
+
+  'step.import': 'Import an image',
+  'step.paint': 'Paint over what to remove',
+  'step.erase': 'Erase & download',
+
+  'batch.eraseAll': '✨ Erase all',
+  'batch.exportAll': '⬇ Download all',
+  'batch.eraseAllHint': 'Apply the mask to every image',
+  'batch.sizeError': 'Images must be the same size',
+  'batch.sameSizeRequired': 'All images must have the same dimensions to share one fixed mask. Got {first}×{firstH} vs {w}×{h}.',
+  'batch.count': '{n} images',
+  'batch.progress': 'Image {i} / {n}',
+  'batch.exportZip': 'inpaint-batch-{n}.zip',
+  'batch.exportName': 'inpaint-{i}.{ext}',
+  'batch.noResult': 'Run “Erase all” first to produce results.',
+
+  'drop.overlay': 'Drop image to import',
+
+  'export.format': 'Format',
+  'export.quality': 'Quality',
+  'export.download': 'Download',
+  'export.needImage': 'Load an image first.',
+
+  'brush.size': 'Size',
+  'brush.hardness': 'Hardness',
+  'zoom.fit': 'Fit to window',
+  'paint.reimport': 'Re-import',
+  'paint.next': 'Next →',
+
+  'erase.model': 'Model',
+  'erase.back': 'Continue painting',
+  'erase.manage': 'Manage models',
+
+  'result.viewOriginal': 'Hold to view original',
+  'result.zip': 'Download ZIP',
+  'result.edit': 'Edit again',
+
+  'view.toggleOriginal': 'Show original (click to toggle)',
+
+  'model.add': 'Add model',
+  'model.change': '⇄ Change model',
+  'model.storage': 'Storage',
+  'model.add.confirm': 'Add',
+  'model.url.label': 'Model URL (.onnx)',
+  'model.name.label': 'Name (optional)',
+  'model.upload.pick': 'Pick .onnx file',
+  'model.upload.file': 'Selected: {name}',
+  'model.req.intro': 'Your model must match the LaMa contract:',
+  'model.req.single': 'Single-file .onnx (no .onnx.data external-weights split).',
+  'model.req.input': 'Input [1,4,H,W]: channels 0–2 masked RGB, channel 3 binary mask; H/W multiples of 32.',
+  'model.req.output': 'Output [1,3,H,W]: inpainted RGB.',
+  'model.req.size': 'Recommended input ≤ 512×512 and file ≤ 512MB.',
+  'model.add.empty': 'Enter a model URL or pick a .onnx file.',
+  'model.add.badUrl': 'The URL must point to a .onnx file.',
+  'model.add.smokeFail': 'This model is not compatible (smoke test failed): {reason}',
+  'model.delete.confirm': 'Delete model “{name}”? It must be downloaded again to use.',
+
+  'model.lite.name': 'Lite',
+  'model.lite.note': 'int8, fast, low memory',
+  'model.balanced.name': 'Balanced',
+  'model.balanced.note': 'fp16, recommended quality/speed',
+  'model.quality.name': 'Quality',
+  'model.quality.note': 'fp32, best quality',
+
+  'model.download.title': 'Download model',
+  'model.download.prompt': 'Download the {name} model ({size} MB) from {source}. Make sure your network is available.',
+  'model.download.offline': 'Network unavailable — the model cannot be downloaded (cached models still work offline).',
+  'model.download.progress': 'Downloading {name}… {loaded} / {total} MB ({pct}%)',
+  'model.download.fail.offline': 'Network unavailable.',
+  'model.download.fail.quota': 'Not enough storage to save this model.',
+  'model.download.fail.network': 'Could not reach the model source.',
+  'model.download.fail.cache': 'Could not store the model in the browser cache.',
+  'model.download.cancelled': 'Download cancelled.',
+
+  'model.use': 'Use',
+  'model.download': 'Download',
+  'model.delete': 'Delete',
+  'model.redownload': 'Re-download',
+  'model.cached': 'cached',
+  'model.needDownload': 'needs download',
+  'model.needDownloadConfirm': 'This model has not been downloaded yet{size} and must be downloaded before erasing. Select it anyway?',
+  'model.recommended': 'Recommended',
+  'model.notRecommended': 'not recommended',
+  'model.why.noGpu': 'Slow without WebGPU.',
+  'model.why.memory': 'Lite suggested on low-memory devices.',
+  'model.why.mobile': 'Suggested on mobile.',
+  'model.why.threads': 'Single-threaded without cross-origin isolation.',
+  'model.why.storage': 'Not enough free storage ({needed} MB needed).',
+  'model.why.offline': 'Offline and not cached.',
+
+  'inference.title': 'Erasing…',
+  'inference.cancel': 'Cancel',
+  'inference.initializing': 'Loading model… (first use can take a while)',
+  'inference.initFetching': 'Fetching model…',
+  'inference.parsing': 'Parsing model graph…',
+  'inference.elapsed': '{stage} ({s}s)',
+  'inference.tileAvg': '~{s}s/tile',
+  'inference.initTimeout': 'Model loading timed out. The model may be too large for this device — try the Lite model.',
+  'inference.error': 'Erase failed: {reason}',
+  'inference.emptyMask': 'Paint over the objects you want to remove first.',
+  'inference.noModel': 'No model selected.',
+  'inference.cancelled': 'Erase cancelled.',
+  'inference.running': 'Erase is running — wait for it to finish before importing new images.',
+  'inference.smokeTest': 'Verifying model compatibility…',
+
+  'storage.text': 'Storage usage: {used} MB of {quota} MB ({pct}%) used. Cached models: {models}.',
+
+  'dlg.cancel': 'Cancel',
+  'dlg.ok': 'OK',
+  'dlg.confirm': 'Confirm',
+  'dlg.done': 'Done',
+  'dlg.export.title': 'Download image',
+  'dlg.model.title': 'Model management',
+
+  'error.unsupported': 'This image format is not supported by your browser.',
+  'error.tooLarge': 'Image is too large: {w}×{h} exceeds the {limit}px side limit. Using a smaller image is recommended.',
+  'error.read': 'Could not read the image file.',
+
+  'faq.title': 'FAQ',
+  'faq.q1': 'Is it free?',
+  'faq.a1': 'Yes — free and open source. No accounts, no payments, no limits.',
+  'faq.q2': 'Will it leak my privacy?',
+  'faq.a2': 'No. Your photos and the AI processing stay in your browser — nothing is ever uploaded to any server.',
+  'faq.q3': 'What devices are recommended?',
+  'faq.a3': 'It is optimized for desktop Chrome — use Chrome for the best speed. Other modern browsers also work.',
+  'faq.q4': 'How do I delete a downloaded model?',
+  'faq.a4': 'Open the ⇄ Change model button on the edit page, find the downloaded model and click Delete to free the storage.',
+  'faq.q5': 'Can I use my own model?',
+  'faq.a5': 'Yes, if it matches the LaMa requirements. Open ⇄ Change model on the edit page and set a model URL to download, or upload a local .onnx file.',
+  'faq.q6': 'Do I need an internet connection?',
+  'faq.a6': 'Only the first time. The LaMa model is downloaded once on first use, then cached locally — later runs work fully offline.',
+  'faq.q7': 'Where do the models come from?',
+  'faq.a7': 'The built-in models are community-packaged LaMa ONNX exports hosted on Hugging Face (g-ronimo/lama, roughly 62–209 MB each). They are downloaded on demand and cached locally. You can also add your own model via a URL or a local .onnx file.',
+
+  'footer.openSource': 'Open source · MIT License',
+
+  'github.link': 'View source on GitHub',
+} as const;
+
+/**
+ * Messages type: key set is fixed by `en` (missing keys in any locale
+ * fail at compile time), values are plain strings so translations may
+ * differ from the English literals.
+ */
+export type Messages = Record<keyof typeof en, string>;

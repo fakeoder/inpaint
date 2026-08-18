@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Inpaint — erase unwanted objects, watermarks & people from images locally in your browser. 100% private, no uploads." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title data-i18n="app.title">inpaint</title>
+  </head>
+  <body>
+    <div id="app">
+      <!-- ── Top bar ─────────────────────────────────────────── -->
+      <header id="topbar">
+        <div class="brand">
+          <span class="brand-logo" aria-hidden="true">✦</span>
+          <span class="brand-name" data-i18n="app.title">inpaint</span>
+        </div>
+        <div class="topbar-actions">
+          <button id="btn-theme" class="icon-btn" type="button" data-i18n-title="theme.toggle" aria-label="Toggle theme">◐</button>
+          <button id="btn-lang" class="icon-btn" type="button" data-i18n-title="lang.toggle" aria-label="Switch language">EN</button>
+          <a class="icon-btn github-link" href="https://github.com/fakeoder/inpaint" target="_blank" rel="noopener noreferrer" aria-label="GitHub" data-i18n-title="github.link">
+            <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- ── Main workspace: home page (hero) + editor page below ── -->
+      <main id="workspace">
+        <!-- Home page: full import hero, keeps the page background -->
+        <section id="import-hero">
+          <div class="hero">
+            <span class="hero-badge" data-i18n="hero.badge">🛡️ 100% local · no uploads</span>
+            <h1 class="hero-title" data-i18n="hero.title">Erase anything from your photos</h1>
+            <p class="hero-sub" data-i18n="hero.sub">Remove objects, watermarks, text and people with one brush stroke — powered by AI, running entirely on your device.</p>
+            <div class="hero-cta">
+              <button id="hero-upload" class="primary-btn btn-lg" type="button" data-i18n="hero.cta">Choose images</button>
+              <span class="hero-hint" data-i18n="hero.hint">or drop / paste (Ctrl/⌘+V)</span>
+              <span class="hero-hint" data-i18n="import.batchHint">Batch import — all images must share the same size</span>
+            </div>
+
+            <div class="hero-steps floating" aria-label="How it works">
+              <div class="step">
+                <span class="step-num">1</span>
+                <span data-i18n="hero.s1">Import an image</span>
+              </div>
+              <div class="step-arrow" aria-hidden="true">→</div>
+              <div class="step">
+                <span class="step-num">2</span>
+                <span data-i18n="hero.s2">Paint over what to remove</span>
+              </div>
+              <div class="step-arrow" aria-hidden="true">→</div>
+              <div class="step">
+                <span class="step-num">3</span>
+                <span data-i18n="hero.s3">Erase & download</span>
+              </div>
+            </div>
+
+            <div class="feature-grid">
+              <div class="feature-card">
+                <span class="feature-icon" aria-hidden="true">🔒</span>
+                <h3 data-i18n="feature.privacy.title">100% private</h3>
+                <p data-i18n="feature.privacy.desc">Your images and the AI run only in your browser — nothing is ever uploaded.</p>
+              </div>
+              <div class="feature-card">
+                <span class="feature-icon" aria-hidden="true">⚡</span>
+                <h3 data-i18n="feature.local.title">Fully on-device</h3>
+                <p data-i18n="feature.local.desc">WASM inference, no install, no server — ready in one click.</p>
+              </div>
+              <div class="feature-card">
+                <span class="feature-icon" aria-hidden="true">🖼️</span>
+                <h3 data-i18n="feature.hd.title">High-resolution</h3>
+                <p data-i18n="feature.hd.desc">Smart tiling handles multi-megapixel photos smoothly.</p>
+              </div>
+              <div class="feature-card">
+                <span class="feature-icon" aria-hidden="true">📦</span>
+                <h3 data-i18n="feature.offline.title">Offline ready</h3>
+                <p data-i18n="feature.offline.desc">Models cache locally — erase again without a network.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Editor page, directly below the compact hero (one page) -->
+        <section id="editor" hidden>
+          <!-- Image list sits ABOVE the preview window -->
+          <div id="batch-bar" class="floating" hidden>
+            <div id="batch-thumbs" role="listbox" aria-label="Images"></div>
+            <div class="batch-actions">
+              <button id="btn-batch-erase" class="small-btn" type="button" data-i18n="batch.eraseAll">✨ Erase all</button>
+            </div>
+          </div>
+
+          <!-- Fixed-size preview window (same background as the home page) -->
+          <div id="preview">
+            <canvas id="canvas" hidden></canvas>
+            <div id="zoom-hud" class="floating" hidden>
+              <span id="zoom-label">100%</span>
+              <button id="btn-view-toggle" class="zoom-fit-btn" type="button" data-i18n-title="view.toggleOriginal">👁</button>
+              <button id="btn-zoom-fit" class="zoom-fit-btn" type="button" data-i18n-title="zoom.fit">⤢</button>
+            </div>
+            <div id="brush-cursor" hidden></div>
+          </div>
+
+          <!-- Controls live BELOW the preview in normal flow (nothing overlaps) -->
+          <div id="edit-panel">
+            <!-- Step indicator (shown once an image is imported) -->
+            <div id="step-bar" class="floating" hidden>
+              <div class="step" data-step="1">
+                <span class="step-num">1</span><span data-i18n="step.import">Import an image</span>
+              </div>
+              <span class="step-arrow" aria-hidden="true">→</span>
+              <div class="step" data-step="2">
+                <span class="step-num">2</span><span data-i18n="step.paint">Paint over what to remove</span>
+              </div>
+              <span class="step-arrow" aria-hidden="true">→</span>
+              <div class="step" data-step="3">
+                <span class="step-num">3</span><span data-i18n="step.erase">Erase & download</span>
+              </div>
+            </div>
+
+            <!-- Paint controls: brush settings + erase directly -->
+            <div id="paint-bar" hidden>
+              <div class="brush-controls">
+                <label class="range-control" for="brush-size">
+                  <span data-i18n="brush.size">Size</span>
+                  <input id="brush-size" type="range" min="4" max="200" step="1" value="40" />
+                  <output id="brush-size-value" for="brush-size">40</output>
+                </label>
+                <label class="range-control" for="brush-hardness">
+                  <span data-i18n="brush.hardness">Hardness</span>
+                  <input id="brush-hardness" type="range" min="0" max="1" step="0.05" value="1" />
+                  <output id="brush-hardness-value" for="brush-hardness">100%</output>
+                </label>
+                <button id="tool-clear" class="small-btn" type="button" data-i18n="tool.clear">✕ Clear</button>
+              </div>
+              <div class="paint-actions">
+                <button id="btn-model-change" class="small-btn" type="button" data-i18n="model.change">⇄ Model</button>
+                <button id="tool-erase" class="primary-btn btn-lg" type="button" data-i18n="tool.erase">✨ Erase</button>
+              </div>
+            </div>
+
+            <!-- Result actions (shown after erasing) -->
+            <div id="result-actions" hidden>
+              <button id="btn-export" class="result-btn primary" type="button" data-i18n="export.download">⬇ Download</button>
+              <button id="btn-batch-export" class="result-btn" type="button" data-i18n="result.zip">🗜 Download ZIP</button>
+              <button id="btn-edit-again" class="result-btn" type="button" data-i18n="result.edit">✏️ Edit again</button>
+            </div>
+
+            <!-- Progress -->
+            <div id="progress" class="floating" hidden>
+              <div id="progress-label" class="progress-label"></div>
+              <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+              <div class="progress-actions">
+                <button id="progress-cancel" class="small-btn" type="button" data-i18n="inference.cancel">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Third page: FAQ -->
+        <section id="faq-page">
+          <div class="faq">
+            <h2 class="faq-title" data-i18n="faq.title">FAQ</h2>
+
+            <details class="faq-item" open>
+              <summary data-i18n="faq.q1">Is it free?</summary>
+              <p data-i18n="faq.a1">Yes — free and open source. No accounts, no payments, no limits.</p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq.q2">Will it leak my privacy?</summary>
+              <p data-i18n="faq.a2">No. Your photos and the AI processing stay in your browser — nothing is ever uploaded to any server.</p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq.q3">What devices are recommended?</summary>
+              <p data-i18n="faq.a3">It is optimized for desktop Chrome — use Chrome for the best speed. Other modern browsers also work.</p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq.q4">How do I delete a downloaded model?</summary>
+              <p data-i18n="faq.a4">Open the ⇄ Change model button on the edit page, find the downloaded model and click Delete to free the storage.</p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq.q5">Can I use my own model?</summary>
+              <p data-i18n="faq.a5">Yes, if it matches the LaMa requirements. Open ⇄ Change model on the edit page and set a model URL to download, or upload a local .onnx file.</p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq.q6">Do I need an internet connection?</summary>
+              <p data-i18n="faq.a6">Only the first time. The LaMa model is downloaded once on first use, then cached locally — later runs work fully offline.</p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq.q7">Where do the models come from?</summary>
+              <p data-i18n="faq.a7">The built-in models are community-packaged LaMa ONNX exports hosted on Hugging Face (g-ronimo/lama, roughly 62–209 MB each). They are downloaded on demand and cached locally. You can also add your own model via a URL or a local .onnx file.</p>
+            </details>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer id="site-footer">
+          <span>© 2025 inpaint</span>
+          <span aria-hidden="true">·</span>
+          <a href="https://github.com/fakeoder/inpaint" target="_blank" rel="noopener noreferrer" data-i18n="footer.openSource">Open source · MIT License</a>
+        </footer>
+      </main>
+
+      <!-- ── Drop overlay ────────────────────────────────────── -->
+      <div id="drop-overlay" hidden data-i18n="drop.overlay">Drop image</div>
+
+      <!-- ── Export dialog (format / quality) ────────────────── -->
+      <dialog id="dlg-export">
+        <form method="dialog" class="dlg">
+          <h2 data-i18n="dlg.export.title">Download image</h2>
+          <div class="row">
+            <label for="export-format" data-i18n="export.format">Format</label>
+            <select id="export-format">
+              <option value="png">PNG</option>
+              <option value="jpeg">JPEG</option>
+            </select>
+          </div>
+          <div class="row" id="jpeg-quality-row" hidden>
+            <label for="export-quality" data-i18n="export.quality">Quality</label>
+            <input id="export-quality" type="range" min="0.5" max="1" step="0.05" value="0.92" />
+          </div>
+          <div class="dlg-actions">
+            <button value="cancel" class="small-btn" data-i18n="dlg.cancel">Cancel</button>
+            <button id="btn-export-confirm" value="default" class="primary-btn" data-i18n="export.download">Download</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- ── Model management dialog ─────────────────────────── -->
+      <dialog id="dlg-model">
+        <div class="dlg">
+          <h2 data-i18n="dlg.model.title">Model management</h2>
+          <div id="current-model" class="current-model" hidden></div>
+          <ul id="model-list" class="model-list"></ul>
+          <div class="row">
+            <button id="btn-add-model" class="small-btn" type="button" data-i18n="model.add">＋ Add model</button>
+            <button id="btn-storage" class="small-btn" type="button" data-i18n="model.storage">Storage</button>
+          </div>
+          <div class="dlg-actions">
+            <button id="dlg-model-ok" class="primary-btn" data-i18n="dlg.done">Done</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- ── Dialogs ─────────────────────────────────────────── -->
+      <dialog id="dlg-add-model">
+        <form method="dialog" class="dlg">
+          <h2 data-i18n="model.add">Add model</h2>
+          <p class="dlg-note" data-i18n="model.req.intro"></p>
+          <ul class="req-list">
+            <li data-i18n="model.req.single"></li>
+            <li data-i18n="model.req.input"></li>
+            <li data-i18n="model.req.output"></li>
+            <li data-i18n="model.req.size"></li>
+          </ul>
+          <label for="model-url" data-i18n="model.url.label">Model URL (.onnx)</label>
+          <input id="model-url" type="url" placeholder="https://…/model.onnx" />
+          <label for="model-name" data-i18n="model.name.label">Name (optional)</label>
+          <input id="model-name" type="text" />
+          <div class="row" id="model-upload-row">
+            <button id="btn-model-file" class="small-btn" type="button" data-i18n="model.upload.pick">Pick .onnx file</button>
+            <span id="model-file-name" class="muted"></span>
+          </div>
+          <input id="model-file" type="file" accept=".onnx" hidden />
+          <div class="dlg-actions">
+            <button value="cancel" class="small-btn" data-i18n="dlg.cancel">Cancel</button>
+            <button id="model-add-confirm" value="default" class="primary-btn" data-i18n="model.add.confirm">Add</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="dlg-download">
+        <div class="dlg">
+          <h2 data-i18n="model.download.title">Download model</h2>
+          <p id="dlg-download-text" class="dlg-note"></p>
+          <div class="dlg-actions">
+            <button id="dlg-download-cancel" class="small-btn" data-i18n="dlg.cancel">Cancel</button>
+            <button id="dlg-download-ok" class="primary-btn" data-i18n="dlg.ok">Download</button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="dlg-message">
+        <div class="dlg">
+          <h2 id="dlg-message-title"></h2>
+          <p id="dlg-message-text" class="dlg-note"></p>
+          <div class="dlg-actions">
+            <button id="dlg-message-ok" class="primary-btn" data-i18n="dlg.ok">OK</button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="dlg-storage">
+        <div class="dlg">
+          <h2 data-i18n="model.storage">Storage</h2>
+          <p id="dlg-storage-text" class="dlg-note"></p>
+          <div class="dlg-actions">
+            <button id="dlg-storage-ok" class="primary-btn" data-i18n="dlg.ok">OK</button>
+          </div>
+        </div>
+      </dialog>
+
+      <input id="file-input" type="file" accept="image/*" multiple hidden />
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

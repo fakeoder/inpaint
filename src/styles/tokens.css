@@ -1,0 +1,76 @@
+/* ── Design tokens ────────────────────────────────────────────
+   All colors are theme-agnostic CSS custom properties; switching
+   light/dark only swaps the token values on :root[data-theme]. */
+
+:root {
+  /* spacing & radii */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 16px;
+  --radius-xl: 24px;
+
+  /* typography */
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+
+  /* layout metrics */
+  --topbar-h: 52px;
+  --toolbar-w: 64px;
+  --panel-w: 320px;
+  --touch-min: 44px;
+
+  /* semantic tokens (values swapped per theme below) */
+  --color-bg: #f3f4f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #eceef2;
+  --color-surface-3: #e2e5eb;
+  --color-border: #d9dce3;
+  --color-text: #1c1e21;
+  --color-text-muted: #6b7280;
+  --color-accent: #4f46e5;
+  --color-accent-2: #7c3aed;
+  --color-accent-contrast: #ffffff;
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+  --color-warn: #d97706;
+  --color-mask: rgba(220, 38, 38, 0.85);
+  --color-brush-ring: rgba(255, 255, 255, 0.95);
+  --gradient-accent: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-2: 0 8px 24px rgba(16, 24, 40, 0.14);
+  --shadow-3: 0 16px 48px rgba(16, 24, 40, 0.18);
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #0f1115;
+  --color-surface: #171a21;
+  --color-surface-2: #1f242e;
+  --color-surface-3: #272e3a;
+  --color-border: #2b313c;
+  --color-text: #e7eaf0;
+  --color-text-muted: #98a1b0;
+  --color-accent: #818cf8;
+  --color-accent-2: #a78bfa;
+  --color-accent-contrast: #10131a;
+  --color-danger: #f87171;
+  --color-success: #4ade80;
+  --color-warn: #fbbf24;
+  --color-mask: rgba(248, 113, 113, 0.85);
+  --color-brush-ring: rgba(0, 0, 0, 0.85);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 16px 48px rgba(0, 0, 0, 0.6);
+}

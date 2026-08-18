@@ -1,0 +1,23 @@
+{
+  "name": "inpaint",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Static, frontend-only high-resolution object eraser for images (LaMa + onnxruntime-web WASM)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "onnxruntime-web": "^1.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^4.1.10"
+  }
+}
