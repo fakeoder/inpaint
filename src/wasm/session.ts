@@ -30,14 +30,38 @@ export async function createSession(
 ): Promise<SessionHandle> {
   ort.env.wasm.wasmPaths = '/ort/';
   ort.env.wasm.numThreads = threads;
-  const session = await ort.InferenceSession.create(modelBytes, {
-    executionProviders: useWebgpu ? ['webgpu', 'wasm'] : ['wasm'],
+  const options: ort.InferenceSession.SessionOptions = {
     // No graph optimization: for an already-quantized/exported LaMa model the
     // optimizer passes add pure parse cost with almost no runtime win, and the
     // constant-folding pass is one of the slowest steps on multi-hundred-MB
     // graphs under WASM. Parsing speed matters far more here.
     graphOptimizationLevel: 'disabled',
-  });
+  };
+  const providers: ort.InferenceSession.ExecutionProviderConfig[] = useWebgpu
+    ? ['webgpu', 'wasm']
+    : ['wasm'];
+  let session: ort.InferenceSession;
+  try {
+    session = await ort.InferenceSession.create(modelBytes, {
+      ...options,
+      executionProviders: providers,
+    });
+  } catch (err) {
+    // WebGPU backend failed to initialize (e.g. the adapter lacks `shader-f16`
+    // and a kernel's shader requires it: "Program Transpose requires f16 but
+    // the device does not support it"). The per-op `wasm` fallback only kicks
+    // in per-kernel, NOT when whole-EP init fails, so retry on WASM alone —
+    // slower, but the session (and the app) still works.
+    if (!useWebgpu) throw err;
+    console.warn(
+      '[inpaint] WebGPU session creation failed, retrying on WASM:',
+      err instanceof Error ? err.message : err,
+    );
+    session = await ort.InferenceSession.create(modelBytes, {
+      ...options,
+      executionProviders: ['wasm'],
+    });
+  }
   const inputName = session.inputNames[0];
   const outputName = session.outputNames[0];
   if (!inputName || !outputName) {

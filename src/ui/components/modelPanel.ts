@@ -18,7 +18,7 @@ import {
   requestPersistentStorage,
   storageEstimate,
 } from '../../storage/modelCache';
-import { detectCapabilities, isModelUsable, recommendModel } from '../../config/detect';
+import { detectCapabilities, isModelUsable, recommendModel, webgpuSupportsF16 } from '../../config/detect';
 import { smokeTestModel } from '../../core/smokeTest';
 import type { ProgressBar } from './progressBar';
 
@@ -123,20 +123,26 @@ export function initModelPanel(deps: ModelPanelDeps): void {
   const caps = detectCapabilities();
   let recommendation: ReturnType<typeof recommendModel> | null = null;
   let cachedIds = new Set<string>();
+  /** True when the current selection was auto-picked (no saved user choice). */
+  let autoSelected = false;
 
-  // seed the store with the full model list (built-ins + persisted customs)
+  // seed the store with the full model list (built-ins + persisted customs).
+  // balanced (fp16) is hidden when the adapter lacks `shader-f16` — it would
+  // crash session creation on the GPU and is slow on CPU (design §6.5).
+  const visibleBuiltins = (): ModelSpec[] =>
+    caps.webgpuF16 ? MODEL_REGISTRY : MODEL_REGISTRY.filter((m) => m.id !== 'balanced');
   const initialCustom = loadCustom();
-  store.dispatch({ type: 'MODELS_SET', builtin: MODEL_REGISTRY, custom: initialCustom });
+  store.dispatch({ type: 'MODELS_SET', builtin: visibleBuiltins(), custom: initialCustom });
 
   // Auto-select immediately (saved choice, else recommended tier, design §6.5)
   // so Erase always has a model — don't wait for the async cache scan.
-  recommendation = recommendModel(caps, [...MODEL_REGISTRY, ...initialCustom], cachedIds);
+  recommendation = recommendModel(caps, [...visibleBuiltins(), ...initialCustom], cachedIds);
   ensureSelection();
 
   requestPersistentStorage();
   void refreshCapabilities();
 
-  /* ── capabilities (async storage fill) ─────────────────────── */
+  /* ── capabilities (async storage fill + f16 detection) ───── */
   async function refreshCapabilities(): Promise<void> {
     try {
       const e = await storageEstimate();
@@ -144,6 +150,18 @@ export function initModelPanel(deps: ModelPanelDeps): void {
     } catch {
       /* keep null */
     }
+    // `shader-f16` support is async to determine — once it resolves, re-seed
+    // the model list (balanced fp16 appears/disappears with f16 support) and
+    // re-run the recommendation so the UI stays consistent.
+    caps.webgpuF16 = await webgpuSupportsF16();
+    store.dispatch({ type: 'MODELS_SET', builtin: visibleBuiltins(), custom: loadCustom() });
+    const all = [...store.getState().model.builtin, ...store.getState().model.custom];
+    recommendation = recommendModel(caps, all, cachedIds);
+    // Re-pick when the selection was auto-made, or when the current choice was
+    // just hidden (e.g. balanced on a device without shader-f16).
+    const sel = store.getState().model.selected;
+    if (autoSelected || !sel || !all.some((m) => m.id === sel.id)) ensureSelection();
+    render();
   }
 
   /* ── custom models persistence ─────────────────────────────── */
@@ -190,6 +208,7 @@ export function initModelPanel(deps: ModelPanelDeps): void {
       const saved = localStorage.getItem(SELECTED_KEY);
       const match = saved ? all.find((m) => m.id === saved) : undefined;
       if (match) {
+        autoSelected = false;
         store.dispatch({ type: 'MODEL_SELECTED', spec: match });
         return;
       }
@@ -197,6 +216,7 @@ export function initModelPanel(deps: ModelPanelDeps): void {
       const rec = recommendation;
       if (rec && all.length > 0) {
         const chosen = all.find((m) => m.id === rec.recommendedId) ?? all[0]!;
+        autoSelected = true;
         store.dispatch({ type: 'MODEL_SELECTED', spec: chosen });
         persistSelection(chosen.id);
       }
@@ -227,7 +247,7 @@ export function initModelPanel(deps: ModelPanelDeps): void {
     if (spec.kind === 'custom') {
       const custom = loadCustom().filter((m) => m.id !== spec.id);
       saveCustom(custom);
-      store.dispatch({ type: 'MODELS_SET', builtin: MODEL_REGISTRY, custom });
+      store.dispatch({ type: 'MODELS_SET', builtin: visibleBuiltins(), custom });
     }
     const s = store.getState();
     if (s.model.selected?.id === spec.id) store.dispatch({ type: 'MODEL_SELECTED', spec: null });
@@ -321,12 +341,12 @@ export function initModelPanel(deps: ModelPanelDeps): void {
 
       const custom = [...loadCustom().filter((m) => m.id !== spec.id), spec];
       saveCustom(custom);
-      store.dispatch({ type: 'MODELS_SET', builtin: MODEL_REGISTRY, custom });
+      store.dispatch({ type: 'MODELS_SET', builtin: visibleBuiltins(), custom });
       store.dispatch({ type: 'MODEL_CACHE_STATUS', id: spec.id, status: spec.origin === 'upload' ? 'cached' : 'none' });
       if (spec.origin === 'upload') cachedIds.add(spec.id);
       store.dispatch({ type: 'MODEL_SELECTED', spec });
       persistSelection(spec.id);
-      recommendation = recommendModel(caps, [...MODEL_REGISTRY, ...custom], cachedIds);
+      recommendation = recommendModel(caps, [...visibleBuiltins(), ...custom], cachedIds);
       render();
       dlg.close();
     };

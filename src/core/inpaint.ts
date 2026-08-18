@@ -27,7 +27,12 @@ import {
  */
 const forceWasm = typeof location !== 'undefined' && new URLSearchParams(location.search).get('wasm') === '1';
 
-/** True when the device offers WebGPU and it wasn't force-disabled. */
+/**
+ * True when WebGPU is available. Adapters WITHOUT `shader-f16` are still used:
+ * onnxruntime-web ≥1.27 transparently falls back to fp32 shaders for fp32
+ * models (verified: quality runs on GPU), and only fp16 tensors require f16 —
+ * session.ts backstops any init failure by retrying on WASM.
+ */
 function hasWebgpu(): boolean {
   return !forceWasm && 'gpu' in navigator;
 }
@@ -136,6 +141,9 @@ export function initInference(deps: InferenceDeps): { run: (options?: { bitmap?:
     }, 1000);
     const stopTick = (): void => clearInterval(elapsedTick);
 
+    // WebGPU capability check happens here (not inside the promise below) so
+    // the check stays in this async function; the promise executor isn't async.
+    const useWebgpu = hasWebgpu();
     setStatus('running', 0, 1, stageLabel);
     await new Promise<void>((resolve, reject) => {
       let settled = false;
@@ -177,7 +185,6 @@ export function initInference(deps: InferenceDeps): { run: (options?: { bitmap?:
         });
       }, MODEL_INIT_TIMEOUT_MS);
       w.addEventListener('message', onMsg);
-      const useWebgpu = hasWebgpu();
       if (spec.url) {
         w.postMessage({ type: 'init', modelUrl: spec.url, threads: spec.threads, useWebgpu });
       } else {

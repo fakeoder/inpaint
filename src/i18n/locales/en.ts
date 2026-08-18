@@ -118,6 +118,8 @@ export const en = {
   'model.recommended': 'Recommended',
   'model.notRecommended': 'not recommended',
   'model.why.noGpu': 'Slow without WebGPU.',
+  'model.why.noFp16': 'This device lacks the WebGPU shader-f16 feature, so fp16 models cannot run on the GPU. Use the fp32 quality model instead.',
+  'model.why.int8': 'Lite (int8) is the fastest option on devices without fp16 support.',
   'model.why.memory': 'Lite suggested on low-memory devices.',
   'model.why.mobile': 'Suggested on mobile.',
   'model.why.threads': 'Single-threaded without cross-origin isolation.',

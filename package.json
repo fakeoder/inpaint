@@ -11,7 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "onnxruntime-web": "^1.19.2"
+    "onnxruntime-web": "^1.27.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

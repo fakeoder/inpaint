@@ -117,6 +117,8 @@ export const zhCN: Messages = {
   'model.recommended': '推荐',
   'model.notRecommended': '不推荐',
   'model.why.noGpu': '没有 WebGPU 时较慢。',
+  'model.why.noFp16': '此设备缺少 WebGPU 的 shader-f16 特性，fp16 模型无法在 GPU 上运行。请改用 fp32 的 quality 模型。',
+  'model.why.int8': '不支持 fp16 的设备上，轻量版（int8）最快。',
   'model.why.memory': '低内存设备建议使用轻量版。',
   'model.why.mobile': '移动端建议。',
   'model.why.threads': '缺少跨源隔离，只能单线程。',

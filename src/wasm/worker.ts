@@ -62,10 +62,12 @@ self.onmessage = async (e: MessageEvent<WorkerMsg>) => {
       // timeout on the main thread guards against any pthread bring-up issue.
       const useWebgpu = msg.useWebgpu ?? ('gpu' in navigator);
       // ORT threading is fixed at 1: pthread bring-up (`new Worker` on the glue
-      // URL) dead-locks session creation in the dev server (observed twice:
-      // threads=2 hangs at createSession both on WASM and WebGPU). Multi-core
-      // utilisation comes from tile-level concurrency on the main thread
-      // (design §13: desktop 4, mobile 2), so threads=1 loses almost nothing.
+      // URL) dead-locks session creation in the dev server. Re-verified on
+      // onnxruntime-web 1.27.0 (threads=4 hangs at createSession, observed
+      // again) — the pthread issue is not version-specific, so threads stay at
+      // 1. Multi-core utilisation comes from tile-level concurrency on the main
+      // thread (design §13: desktop 4, mobile 2), so threads=1 loses almost
+      // nothing.
       log('init: threads = 1 (pthread dead-lock guard) useWebgpu =', useWebgpu);
       const t0 = performance.now();
       log('init: createSession start');
