@@ -24,6 +24,7 @@ export const zhCN: Messages = {
   'hero.s2': '涂抹要移除的内容',
   'hero.s3': '擦除并下载',
   'import.batchHint': '支持批量导入——批量时所有图片尺寸需一致',
+  'import.formats': '支持格式：JPEG · PNG · WebP',
 
   'feature.privacy.title': '100% 隐私保护',
   'feature.privacy.desc': '图片与 AI 推理全程只在你的浏览器内运行，绝不上传任何数据。',
@@ -57,7 +58,6 @@ export const zhCN: Messages = {
   'export.needImage': '请先加载图片。',
 
   'brush.size': '大小',
-  'brush.hardness': '硬度',
   'zoom.fit': '适应窗口',
   'paint.reimport': '重新导入',
   'paint.next': '下一步 →',
@@ -100,6 +100,7 @@ export const zhCN: Messages = {
   'model.download.title': '下载模型',
   'model.download.prompt': '将从 {source} 下载 {name} 模型（{size} MB）。请确保网络可用。',
   'model.download.offline': '网络不可用 — 无法下载模型（已缓存的模型仍可离线使用）。',
+  'model.download.busy': '已有模型正在下载，请等待其完成后再试。',
   'model.download.progress': '正在下载 {name}… {loaded} / {total} MB（{pct}%）',
   'model.download.fail.offline': '网络不可用。',
   'model.download.fail.quota': '存储空间不足，无法保存该模型。',
@@ -152,6 +153,8 @@ export const zhCN: Messages = {
   'error.unsupported': '您的浏览器不支持该图片格式。',
   'error.tooLarge': '图片过大：{w}×{h} 超过 {limit}px 边长上限。建议改用更小的图片。',
   'error.read': '无法读取该图片文件。',
+  'error.unsupportedFormat': '不支持的图片格式',
+  'error.unsupportedFormatDetail': '以下文件因格式不支持已跳过：{names}',
 
   'faq.title': '常见问题',
   'faq.q1': '收费吗？',

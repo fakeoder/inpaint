@@ -17,9 +17,13 @@ export interface SessionInfo {
   outputName: string;
 }
 
+/** The execution provider actually used for inference (wasm = CPU). */
+export type ExecProvider = 'webgpu' | 'wasm';
+
 export interface SessionHandle {
   session: ort.InferenceSession;
   info: SessionInfo;
+  ep: ExecProvider;
 }
 
 /** Create a session from model bytes. */
@@ -41,6 +45,7 @@ export async function createSession(
     ? ['webgpu', 'wasm']
     : ['wasm'];
   let session: ort.InferenceSession;
+  let ep: ExecProvider = 'webgpu';
   try {
     session = await ort.InferenceSession.create(modelBytes, {
       ...options,
@@ -57,6 +62,7 @@ export async function createSession(
       '[inpaint] WebGPU session creation failed, retrying on WASM:',
       err instanceof Error ? err.message : err,
     );
+    ep = 'wasm';
     session = await ort.InferenceSession.create(modelBytes, {
       ...options,
       executionProviders: ['wasm'],
@@ -67,7 +73,7 @@ export async function createSession(
   if (!inputName || !outputName) {
     throw new Error('model has no input/output names');
   }
-  return { session, info: { inputName, outputName } };
+  return { session, info: { inputName, outputName }, ep };
 }
 
 /**

@@ -6,6 +6,7 @@ import {
   restoreRegion,
   MaskHistory,
   composeMaskRegion,
+  MASK_DISPLAY_ALPHA,
   strokeBBox,
   type BrushState,
 } from '../src/core/mask';
@@ -61,15 +62,15 @@ describe('mask: display compose', () => {
     stroke[3 * 10 + 4] = 200;
     composeMaskRegion(img, mask, stroke, { x: 0, y: 0, w: 10, h: 10 }, 'add');
     expect(img.data[(3 * 10 + 4) * 4]).toBe(255); // red
-    expect(img.data[(3 * 10 + 4) * 4 + 3]).toBe(200); // alpha = max
+    expect(img.data[(3 * 10 + 4) * 4 + 3]).toBe(MASK_DISPLAY_ALPHA); // binary, fixed alpha
   });
 
-  it('composes erase-mode stroke by inverting', () => {
+  it('composes erase-mode stroke by clearing the pixel', () => {
     const img = new ImageData(10, 10);
     const mask = createMask(10, 10).fill(255) as Uint8ClampedArray;
     const stroke = createMask(10, 10);
     stroke[1 * 10 + 1] = 100;
     composeMaskRegion(img, mask, stroke, { x: 0, y: 0, w: 10, h: 10 }, 'erase');
-    expect(img.data[(1 * 10 + 1) * 4 + 3]).toBe(255 - 100);
+    expect(img.data[(1 * 10 + 1) * 4 + 3]).toBe(0);
   });
 });

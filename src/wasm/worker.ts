@@ -61,21 +61,20 @@ self.onmessage = async (e: MessageEvent<WorkerMsg>) => {
       // count when cross-origin isolation allows SharedArrayBuffer; the 120s init
       // timeout on the main thread guards against any pthread bring-up issue.
       const useWebgpu = msg.useWebgpu ?? ('gpu' in navigator);
-      // ORT threading is fixed at 1: pthread bring-up (`new Worker` on the glue
-      // URL) dead-locks session creation in the dev server. Re-verified on
-      // onnxruntime-web 1.27.0 (threads=4 hangs at createSession, observed
-      // again) — the pthread issue is not version-specific, so threads stay at
-      // 1. Multi-core utilisation comes from tile-level concurrency on the main
-      // thread (design §13: desktop 4, mobile 2), so threads=1 loses almost
-      // nothing.
-      log('init: threads = 1 (pthread dead-lock guard) useWebgpu =', useWebgpu);
+      // Multi-threading needs SharedArrayBuffer, i.e. full cross-origin
+      // isolation (COOP/COEP headers on the page AND on the /ort/ glue files —
+      // see serveOrtDev). Without it, ORT falls back to single-threaded anyway,
+      // so mirror that decision here instead of hard-coding 1.
+      const isolated = typeof crossOriginIsolated === 'boolean' && crossOriginIsolated;
+      const threads = isolated ? msg.threads : 1;
+      log(`init: threads = ${threads}${isolated ? '' : ' (not cross-origin isolated)'} useWebgpu =`, useWebgpu);
       const t0 = performance.now();
       log('init: createSession start');
-      handle = await createSession(bytes, 1, useWebgpu);
+      handle = await createSession(bytes, threads, useWebgpu);
       const parseS = ((performance.now() - t0) / 1000).toFixed(1);
-      log(`init: session created in ${parseS}s`);
+      log(`init: session created in ${parseS}s, EP = ${handle.ep}, threads = ${threads}`);
       post({ type: 'init-progress', stage: 'parse', detail: 'done', ms: Math.round(performance.now() - t0) });
-      post({ type: 'ready', inputName: handle.info.inputName, outputName: handle.info.outputName });
+      post({ type: 'ready', inputName: handle.info.inputName, outputName: handle.info.outputName, ep: handle.ep });
     } else if (msg.type === 'infer') {
       if (!handle) throw new Error('session not initialized');
       cancelled = false;

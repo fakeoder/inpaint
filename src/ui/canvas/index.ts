@@ -167,52 +167,78 @@ export function createCanvasController(canvas: HTMLCanvasElement, wrap: HTMLElem
 
   function drawScene(rect?: MaskRect): void {
     if (!image) return;
+    const img = image;
     const dpr = window.devicePixelRatio || 1;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-
     const t = state.transform;
-    applyViewTransform();
 
-    if (state.compare && resultCanvas) {
-      // original full, result clipped to the slider line
-      ctx.drawImage(image, 0, 0);
-      const splitX = state.slider * image.width;
-      ctx.save();
-      ctx.beginPath();
-      if (state.resultFirst) {
-        ctx.rect(splitX, 0, image.width - splitX, image.height);
-      } else {
-        ctx.rect(0, 0, splitX, image.height);
+    const render = (): void => {
+      applyViewTransform();
+
+      if (state.compare && resultCanvas) {
+        // original full, result clipped to the slider line
+        ctx.drawImage(img, 0, 0);
+        const splitX = state.slider * img.width;
+        ctx.save();
+        ctx.beginPath();
+        if (state.resultFirst) {
+          ctx.rect(splitX, 0, img.width - splitX, img.height);
+        } else {
+          ctx.rect(0, 0, splitX, img.height);
+        }
+        ctx.clip();
+        ctx.drawImage(resultCanvas, 0, 0);
+        ctx.restore();
+        // divider line
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+        ctx.lineWidth = 2 / t.scale;
+        ctx.beginPath();
+        ctx.moveTo(splitX, 0);
+        ctx.lineTo(splitX, img.height);
+        ctx.stroke();
+        return;
       }
-      ctx.clip();
-      ctx.drawImage(resultCanvas, 0, 0);
-      ctx.restore();
-      // divider line
-      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-      ctx.lineWidth = 2 / t.scale;
-      ctx.beginPath();
-      ctx.moveTo(splitX, 0);
-      ctx.lineTo(splitX, image.height);
-      ctx.stroke();
-      return;
-    }
 
-    if (state.resultFirst && resultCanvas) {
-      ctx.drawImage(resultCanvas, 0, 0);
-    } else {
-      ctx.drawImage(image, 0, 0);
-    }
-
-    // mask overlay (hidden in compare mode and off the result view —
-    // the result must show clean, and "hold to view original" must show the
-    // untouched image without the red mask on top)
-    if (maskCanvas && mask && state.showMask && !state.resultFirst) {
-      if (rect) {
-        ctx.drawImage(maskCanvas, rect.x, rect.y, rect.w, rect.h, rect.x, rect.y, rect.w, rect.h);
+      if (state.resultFirst && resultCanvas) {
+        ctx.drawImage(resultCanvas, 0, 0);
       } else {
+        ctx.drawImage(img, 0, 0);
+      }
+
+      // mask overlay (hidden in compare mode and off the result view —
+      // the result must show clean, and "hold to view original" must show the
+      // untouched image without the red mask on top)
+      if (maskCanvas && mask && state.showMask && !state.resultFirst) {
         ctx.drawImage(maskCanvas, 0, 0);
       }
+    };
+
+    if (rect) {
+      // Incremental redraw: clear + clip only the dirty rect so the full-image
+      // drawImage above rasterizes just that region instead of the whole canvas
+      // on every pointermove — the main paint-latency cost on large images.
+      // The clip is set in DEVICE-pixel space and snapped to whole device px
+      // (+1px margin): a fractional clip edge anti-aliases and leaves faint
+      // horizontal/vertical "border" hairlines around the stroke.
+      const sx = rect.x * t.scale + t.ox;
+      const sy = rect.y * t.scale + t.oy;
+      const sw = rect.w * t.scale;
+      const sh = rect.h * t.scale;
+      const x0 = Math.floor(sx * dpr) - 1;
+      const y0 = Math.floor(sy * dpr) - 1;
+      const x1 = Math.ceil((sx + sw) * dpr) + 1;
+      const y1 = Math.ceil((sy + sh) * dpr) + 1;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x0, y0, x1 - x0, y1 - y0);
+      ctx.clip();
+      ctx.clearRect(x0, y0, x1 - x0, y1 - y0);
+      render();
+      ctx.restore();
+    } else {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      render();
     }
   }
 

@@ -75,6 +75,12 @@ function serveOrtDev(): Plugin {
         const ext = file.slice(file.lastIndexOf('.'));
         res.setHeader('Content-Type', MIME[ext] ?? 'application/octet-stream');
         res.setHeader('Cache-Control', 'no-cache');
+        // Same COOP/COEP as the rest of the app: the pthread worker loads the
+        // ORT glue from /ort/, and multi-threading needs SharedArrayBuffer
+        // (full cross-origin isolation) — without these headers on the glue
+        // response the worker silently hangs createSession.
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+        res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
         createReadStream(file).pipe(res);
       });
     },

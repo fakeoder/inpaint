@@ -66,15 +66,24 @@ function confirmDownload(deps: ModelPanelDeps, spec: ModelSpec): Promise<boolean
  * (pressing Erase with an uncached model). Returns true when the model
  * is ready to use afterwards.
  */
+let downloadInProgress = false;
+
 export async function downloadModelSpec(deps: ModelPanelDeps, spec: ModelSpec): Promise<boolean> {
   const { store, translate: t } = deps;
   if (!spec.url) return true; // local uploads need no download
+  // Only one download at a time: two concurrent downloads would fight over
+  // the shared progress bar and corrupt each other's cache status.
+  if (downloadInProgress) {
+    deps.showMessage(t('model.download.title'), t('model.download.busy'));
+    return false;
+  }
   if (!navigator.onLine) {
     deps.showMessage(t('model.download.title'), t('model.download.offline'));
     return false;
   }
   const ok = await confirmDownload(deps, spec);
   if (!ok) return false;
+  downloadInProgress = true;
   store.dispatch({ type: 'MODEL_CACHE_STATUS', id: spec.id, status: 'downloading' });
   const ac = new AbortController();
   deps.progress.show({
@@ -109,6 +118,7 @@ export async function downloadModelSpec(deps: ModelPanelDeps, spec: ModelSpec): 
     }
     return false;
   } finally {
+    downloadInProgress = false;
     deps.progress.hide();
   }
 }

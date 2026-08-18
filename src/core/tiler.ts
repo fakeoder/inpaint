@@ -166,7 +166,11 @@ export function sampleContext(
     for (let x = 0; x < tile.feedW; x++) {
       samplePixel(image, mask, fx + x * sx, imgY, imgW, imgH, px);
       const base = y * tile.feedW + x;
-      const m = px[3];
+      // Binarize the mask: painting is a SELECTION, not a graded brush — any
+      // painted pixel (alpha > 0) is part of the region, so soft brush edges
+      // and overlapping strokes must not change the model input (LaMa expects
+      // a binary mask, design §5.1/§6.1).
+      const m = px[3] > 0 ? 1 : 0;
       // masked RGB: zero out whatever sits under the mask (LaMa contract)
       out[base] = px[0] * (1 - m);
       out[HW + base] = px[1] * (1 - m);

@@ -169,11 +169,18 @@ export function stampCircle(
   }
 }
 
+/** Fixed alpha (0..255) used to draw the mask overlay. Painting is a
+ *  SELECTION, not a graded brush: any painted pixel (value > 0) renders at
+ *  this single alpha, so overlapping strokes never stack darker. The model
+ *  input is binarized the same way in `sampleContext` (design §5.1/§6.1). */
+export const MASK_DISPLAY_ALPHA = 128;
+
 /**
  * Compose the display RGBA mask layer for `rect` from the committed mask
- * plus an optional in-progress stroke layer:
- *   add:   v = max(mask, stroke)
- *   erase: v = min(mask, 255 - stroke)
+ * plus an optional in-progress stroke layer. Pixels are binary (painted or
+ * not) — both the committed mask and the stroke are thresholded at >0, then:
+ *   add:   v = mask || stroke
+ *   erase: v = mask && !stroke
  * Only the red+alpha channels are written (green/blue stay 0).
  */
 export function composeMaskRegion(
@@ -188,13 +195,13 @@ export function composeMaskRegion(
     const mi = (y + row) * out.width + x;
     const oi = mi * 4;
     for (let col = 0; col < w; col++) {
-      let v = mask[mi + col]!;
+      let v = mask[mi + col]! > 0 ? 1 : 0;
       if (stroke) {
-        const s = stroke[mi + col]!;
-        v = mode === 'add' ? Math.max(v, s) : Math.min(v, 255 - s);
+        const s = stroke[mi + col]! > 0 ? 1 : 0;
+        v = mode === 'add' ? v | s : s ? 0 : v;
       }
       out.data[oi + col * 4] = 255;
-      out.data[oi + col * 4 + 3] = v;
+      out.data[oi + col * 4 + 3] = v ? MASK_DISPLAY_ALPHA : 0;
     }
   }
 }

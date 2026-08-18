@@ -11,6 +11,20 @@ export interface DecodedImage {
   height: number;
 }
 
+/** Image formats the app accepts (browser decode support may vary). */
+export const SUPPORTED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const;
+
+const SUPPORTED_IMAGE_EXT = /\.(jpe?g|png|webp)$/i;
+
+/** True when the file looks like a supported image (by MIME type or extension). */
+export function isSupportedImage(file: File): boolean {
+  return SUPPORTED_IMAGE_TYPES.includes(file.type as (typeof SUPPORTED_IMAGE_TYPES)[number]) || SUPPORTED_IMAGE_EXT.test(file.name);
+}
+
 export class ImageDecodeError extends Error {
   constructor(public code: 'unsupported' | 'tooLarge' | 'read', message: string, public extra?: Record<string, string | number>) {
     super(message);

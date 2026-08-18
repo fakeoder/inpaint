@@ -5,7 +5,7 @@
  * UI flow (design §2.6), all on ONE page:
  *   1. Import an image            → the import hero at the top (stays visible,
  *                                  collapses to a compact bar once loaded)
- *   2. Paint over what to remove  → floating paint bar (brush size / hardness / clear)
+ *   2. Paint over what to remove  → floating paint bar (brush size / clear)
  *   3. Erase & download           → floating erase bar (model + erase),
  *                                  then floating result actions
  * There is no left toolbar and no right panel: everything floats over the
@@ -23,6 +23,7 @@ import {
   decodeImage,
   downloadBlob,
   ImageDecodeError,
+  isSupportedImage,
 } from './core/image';
 import { createMask, maskBBox, snapshotAt, type BrushState } from './core/mask';
 import { BRUSH_DEFAULTS } from './config/constants';
@@ -164,8 +165,19 @@ async function importFiles(files: File[]): Promise<void> {
 }
 
 function importFromList(list: FileList | null): void {
-  const files = list ? [...list].filter((f) => f.type.startsWith('image/')) : [];
-  void importFiles(files);
+  const files = list ? [...list] : [];
+  if (files.length === 0) return;
+  // Reject unsupported files up front with a clear prompt instead of silently
+  // dropping them (or failing later inside decodeImage).
+  const unsupported = files.filter((f) => !isSupportedImage(f));
+  const supported = files.filter((f) => isSupportedImage(f));
+  if (unsupported.length > 0) {
+    showMessage(
+      t('error.unsupportedFormat'),
+      t('error.unsupportedFormatDetail', { names: unsupported.map((f) => f.name).join(', ') }),
+    );
+  }
+  if (supported.length > 0) void importFiles(supported);
 }
 
 $('file-input').addEventListener('change', (e) => {
@@ -347,7 +359,7 @@ $('btn-batch-erase').addEventListener('click', () => void batchEraseAll());
 $('btn-batch-export').addEventListener('click', () => void batchExportAll());
 
 // ── editor tools ──────────────────────────────────────────────
-// Single brush mode — only size / hardness / clear are exposed.
+// Single brush mode — only size / clear are exposed.
 canvas.setTool('add');
 
 function applyBrush(): void {
@@ -370,14 +382,10 @@ $<HTMLInputElement>('brush-size').addEventListener('input', (e) => {
   setRangeFill(input);
   applyBrush();
 });
-$<HTMLInputElement>('brush-hardness').addEventListener('input', (e) => {
-  const input = e.target as HTMLInputElement;
-  const v = Number(input.value);
-  brush = { ...brush, hardness: v };
-  $('brush-hardness-value').textContent = `${Math.round(v * 100)}%`;
-  setRangeFill(input);
-  applyBrush();
-});
+
+// re-import a new image (or batch) straight from the editor — no need to
+// scroll back to the home hero.
+$('btn-reimport').addEventListener('click', () => $<HTMLInputElement>('file-input').click());
 
 // stroke → snapshot BEFORE mutation (canvas commits after the callback)
 canvas.setOnStrokeEnd((rect) => {
@@ -542,6 +550,5 @@ $('tool-erase').addEventListener('click', () => {
 
 // ── start ─────────────────────────────────────────────────────
 setRangeFill($<HTMLInputElement>('brush-size'));
-setRangeFill($<HTMLInputElement>('brush-hardness'));
 updateToolbar();
 renderSteps();

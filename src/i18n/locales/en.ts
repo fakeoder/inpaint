@@ -25,6 +25,7 @@ export const en = {
   'hero.s2': 'Paint over what to remove',
   'hero.s3': 'Erase & download',
   'import.batchHint': 'Batch import — all images must share the same size',
+  'import.formats': 'Supported formats: JPEG · PNG · WebP',
 
   'feature.privacy.title': '100% private',
   'feature.privacy.desc': 'Your images and the AI run only in your browser — nothing is ever uploaded.',
@@ -58,7 +59,6 @@ export const en = {
   'export.needImage': 'Load an image first.',
 
   'brush.size': 'Size',
-  'brush.hardness': 'Hardness',
   'zoom.fit': 'Fit to window',
   'paint.reimport': 'Re-import',
   'paint.next': 'Next →',
@@ -101,6 +101,7 @@ export const en = {
   'model.download.title': 'Download model',
   'model.download.prompt': 'Download the {name} model ({size} MB) from {source}. Make sure your network is available.',
   'model.download.offline': 'Network unavailable — the model cannot be downloaded (cached models still work offline).',
+  'model.download.busy': 'A model download is already in progress — wait for it to finish first.',
   'model.download.progress': 'Downloading {name}… {loaded} / {total} MB ({pct}%)',
   'model.download.fail.offline': 'Network unavailable.',
   'model.download.fail.quota': 'Not enough storage to save this model.',
@@ -153,6 +154,8 @@ export const en = {
   'error.unsupported': 'This image format is not supported by your browser.',
   'error.tooLarge': 'Image is too large: {w}×{h} exceeds the {limit}px side limit. Using a smaller image is recommended.',
   'error.read': 'Could not read the image file.',
+  'error.unsupportedFormat': 'Unsupported image format',
+  'error.unsupportedFormatDetail': 'These files were skipped (unsupported format): {names}',
 
   'faq.title': 'FAQ',
   'faq.q1': 'Is it free?',
