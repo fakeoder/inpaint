@@ -179,6 +179,10 @@ export const en = {
   'faq.a7': 'The built-in models are community-packaged LaMa ONNX exports hosted on Hugging Face (g-ronimo/lama, roughly 62–209 MB each). They are downloaded on demand and cached locally. You can also add your own model via a URL or a local .onnx file.',
 
   'footer.openSource': 'Open source · MIT License',
+  'footer.privacy': 'Privacy',
+  'footer.terms': 'Terms',
+  'footer.pricing': 'Pricing',
+  'footer.contact': 'Contact',
 
   'github.link': 'View source on GitHub',
 } as const;

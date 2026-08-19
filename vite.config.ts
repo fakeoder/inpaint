@@ -101,5 +101,13 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: true,
     assetsInlineLimit: 0,
+    rollupOptions: {
+      input: {
+        main: join(root, 'index.html'),
+        privacy: join(root, 'privacy.html'),
+        terms: join(root, 'terms.html'),
+        pricing: join(root, 'pricing.html'),
+      },
+    },
   },
 });

@@ -178,6 +178,10 @@ export const zhCN: Messages = {
   'faq.a7': '内置模型来自 Hugging Face 社区仓库 g-ronimo/lama（LaMa 的 ONNX 社区打包，每个约 62–209 MB），按需下载并缓存在本地。你也可以在「⇄ 切换模型」中添加自己的模型 URL 或上传本地 .onnx 文件。',
 
   'footer.openSource': '开源 · MIT 协议',
+  'footer.privacy': '隐私政策',
+  'footer.terms': '服务条款',
+  'footer.pricing': '价格',
+  'footer.contact': '联系我们',
 
   'github.link': '在 GitHub 查看源码',
 };
