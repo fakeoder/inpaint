@@ -6,6 +6,7 @@ export const zhCN: Messages = {
 
   'theme.toggle': '切换主题',
   'lang.toggle': '切换语言',
+  'site.home': '主站',
 
   'tool.upload': '上传',
   'tool.brush': '画笔',
@@ -182,6 +183,7 @@ export const zhCN: Messages = {
   'footer.terms': '服务条款',
   'footer.pricing': '价格',
   'footer.contact': '联系我们',
+  'footer.products': '更多产品',
 
   'github.link': '在 GitHub 查看源码',
 };

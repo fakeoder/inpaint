@@ -7,6 +7,7 @@ export const en = {
 
   'theme.toggle': 'Toggle theme',
   'lang.toggle': 'Switch language',
+  'site.home': 'Main site',
 
   'tool.upload': 'Upload',
   'tool.brush': 'Brush',
@@ -183,6 +184,7 @@ export const en = {
   'footer.terms': 'Terms',
   'footer.pricing': 'Pricing',
   'footer.contact': 'Contact',
+  'footer.products': 'More products',
 
   'github.link': 'View source on GitHub',
 } as const;
