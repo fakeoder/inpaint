@@ -458,6 +458,13 @@
   padding: 2px 6px;
 }
 
+.mask-hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
 .range-control input[type="range"] {
   width: 110px;
   height: 20px;
@@ -575,11 +582,19 @@
   border-color: transparent;
 }
 
-/* ── Progress (normal flow, below the preview) ──────────────── */
+/* ── Progress (kept over the preview while the device is working) ── */
 #progress {
-  width: 100%;
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  width: calc(100% - var(--space-6));
   max-width: 420px;
-  margin: 0 auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-2);
   padding: var(--space-3);
 }
 
@@ -1189,6 +1204,12 @@ dialog::backdrop {
   .range-control {
     flex: 1 1 100%;
     justify-content: space-between;
+  }
+
+  .mask-hint {
+    flex: 1 1 100%;
+    text-align: center;
+    white-space: normal;
   }
 
   .range-control input[type="range"] {

@@ -59,8 +59,9 @@ export const en = {
   'export.needImage': 'Load an image first.',
 
   'brush.size': 'Size',
+  'brush.maskHint': 'Red = erase',
   'zoom.fit': 'Fit to window',
-  'paint.reimport': 'Re-import',
+  'paint.reimport': 'Choose image',
   'paint.next': 'Next →',
 
   'erase.model': 'Model',
@@ -70,6 +71,7 @@ export const en = {
   'result.viewOriginal': 'Hold to view original',
   'result.zip': 'Download ZIP',
   'result.edit': 'Edit again',
+  'result.choose': 'Choose image',
 
   'view.toggleOriginal': 'Show original (click to toggle)',
 
@@ -134,6 +136,7 @@ export const en = {
   'inference.parsing': 'Parsing model graph…',
   'inference.elapsed': '{stage} ({s}s)',
   'inference.tileAvg': '~{s}s/tile',
+  'inference.erasingElapsed': 'Erasing… {s}s elapsed',
   'inference.initTimeout': 'Model loading timed out. The model may be too large for this device — try the Lite model.',
   'inference.error': 'Erase failed: {reason}',
   'inference.emptyMask': 'Paint over the objects you want to remove first.',
@@ -156,6 +159,8 @@ export const en = {
   'error.read': 'Could not read the image file.',
   'error.unsupportedFormat': 'Unsupported image format',
   'error.unsupportedFormatDetail': 'These files were skipped (unsupported format): {names}',
+  'error.resource': 'Not enough device resources',
+  'error.resourceDetail': 'This image or model is too demanding for the available memory. Please try a smaller image or the Lite model. On iPhone or iPad, use a computer for large images.',
 
   'faq.title': 'FAQ',
   'faq.q1': 'Is it free?',

@@ -173,7 +173,8 @@ export function stampCircle(
  *  SELECTION, not a graded brush: any painted pixel (value > 0) renders at
  *  this single alpha, so overlapping strokes never stack darker. The model
  *  input is binarized the same way in `sampleContext` (design §5.1/§6.1). */
-export const MASK_DISPLAY_ALPHA = 128;
+// A stronger overlay makes small unpainted holes obvious on bright photos.
+export const MASK_DISPLAY_ALPHA = 180;
 
 /**
  * Compose the display RGBA mask layer for `rect` from the committed mask
@@ -181,7 +182,7 @@ export const MASK_DISPLAY_ALPHA = 128;
  * not) — both the committed mask and the stroke are thresholded at >0, then:
  *   add:   v = mask || stroke
  *   erase: v = mask && !stroke
- * Only the red+alpha channels are written (green/blue stay 0).
+ * The overlay uses a dark red tint so it remains visible over varied photos.
  */
 export function composeMaskRegion(
   out: ImageData,
@@ -191,17 +192,30 @@ export function composeMaskRegion(
   mode: MaskMode,
 ): void {
   const { x, y, w, h } = rect;
+  const paintedAt = (px: number, py: number): boolean => {
+    if (px < 0 || py < 0 || px >= out.width || py >= out.height) return false;
+    const index = py * out.width + px;
+    const base = mask[index]! > 0;
+    if (!stroke) return base;
+    const mark = stroke[index]! > 0;
+    return mode === 'add' ? base || mark : base && !mark;
+  };
   for (let row = 0; row < h; row++) {
     const mi = (y + row) * out.width + x;
     const oi = mi * 4;
     for (let col = 0; col < w; col++) {
-      let v = mask[mi + col]! > 0 ? 1 : 0;
-      if (stroke) {
-        const s = stroke[mi + col]! > 0 ? 1 : 0;
-        v = mode === 'add' ? v | s : s ? 0 : v;
-      }
+      const px = x + col;
+      const py = y + row;
+      const v = paintedAt(px, py);
+      const edge = v && (
+        !paintedAt(px - 1, py) || !paintedAt(px + 1, py) ||
+        !paintedAt(px, py - 1) || !paintedAt(px, py + 1)
+      );
       out.data[oi + col * 4] = 255;
-      out.data[oi + col * 4 + 3] = v ? MASK_DISPLAY_ALPHA : 0;
+      out.data[oi + col * 4 + 1] = 18;
+      out.data[oi + col * 4 + 2] = 18;
+      // Feather only the display edge; inference still uses the untouched binary mask.
+      out.data[oi + col * 4 + 3] = v ? (edge ? MASK_DISPLAY_ALPHA - 65 : MASK_DISPLAY_ALPHA) : 0;
     }
   }
 }

@@ -90,6 +90,27 @@ function showMessage(title: string, text: string): void {
   dlg.showModal();
 }
 
+/** Keep the brush useful at the image's native pixel scale, not the viewport scale. */
+function syncBrushForImage(width: number, height: number): void {
+  const shortestSide = Math.min(width, height);
+  const max = Math.min(2000, Math.max(200, Math.round(shortestSide * 0.25)));
+  const input = $<HTMLInputElement>('brush-size');
+  input.max = String(max);
+  const size = Math.min(max, Math.max(Number(input.min), brush.size));
+  brush = { ...brush, size };
+  input.value = String(size);
+  $('brush-size-value').textContent = String(size);
+  setRangeFill(input);
+  applyBrush();
+}
+
+function isResourceError(error: unknown): boolean {
+  if (error instanceof RangeError) return true;
+  if (error instanceof DOMException && ['QuotaExceededError', 'InvalidStateError', 'OperationError'].includes(error.name)) return true;
+  const message = error instanceof Error ? error.message : String(error);
+  return /memory|allocation|out of memory|资源|内存/i.test(message);
+}
+
 function updateToolbar(): void {
   const s = store.getState();
   const running = s.inference.status === 'running' || batchRunning;
@@ -145,6 +166,7 @@ async function importFiles(files: File[]): Promise<void> {
     canvasEl.hidden = false;
     canvas.setImage(first.bitmap);
     canvas.setMask(mask, first.width, first.height);
+    syncBrushForImage(first.width, first.height);
     canvas.setResult(null);
     canvas.setBeforeAfter(false);
     for (const prev of prevBatch) prev.bitmap.close();
@@ -158,8 +180,10 @@ async function importFiles(files: File[]): Promise<void> {
     if (e instanceof ImageDecodeError) {
       const key = e.code === 'unsupported' ? 'error.unsupported' : e.code === 'tooLarge' ? 'error.tooLarge' : 'error.read';
       showMessage(t('error.read'), t(key, e.extra ?? {}));
+    } else if (isResourceError(e)) {
+      showMessage(t('error.resource'), t('error.resourceDetail'));
     } else {
-      showMessage(t('error.read'), String(e));
+      showMessage(t('error.read'), e instanceof Error ? e.message : String(e));
     }
   }
 }
@@ -410,6 +434,8 @@ $('btn-edit-again').addEventListener('click', () => {
   setStep('paint');
 });
 
+$('btn-result-import').addEventListener('click', () => $<HTMLInputElement>('file-input').click());
+
 // change model: open the model management dialog
 $('btn-model-change').addEventListener('click', () => {
   $<HTMLDialogElement>('dlg-model').showModal();
@@ -514,7 +540,7 @@ function runErase(): void {
   progress.show({ title: t('inference.title'), kind: 'inference', cancel: () => inference.cancel() });
   void inference.run().then(() => {
     const st = store.getState().inference.status;
-    if (st === 'done' || st === 'error' || st === 'idle') progress.hide();
+    if (st === 'error' || st === 'idle') progress.hide();
     // keep the result in the batch so switching images doesn't lose it
     const cur = store.getState();
     if (cur.batch.images[cur.batch.index]) {
@@ -524,7 +550,12 @@ function runErase(): void {
     if (st === 'done') {
       canvas.setBeforeAfter(true); // show the erased result on the canvas
       setStep('done');
+      // Let the completed 100% state be visible before switching to results.
+      void new Promise<void>((resolve) => window.setTimeout(resolve, 600)).then(() => progress.hide());
     }
+  }).catch((e: unknown) => {
+    progress.hide();
+    showMessage(t('inference.error'), isResourceError(e) ? t('error.resourceDetail') : e instanceof Error ? e.message : String(e));
   });
 }
 

@@ -58,8 +58,9 @@ export const zhCN: Messages = {
   'export.needImage': '请先加载图片。',
 
   'brush.size': '大小',
+  'brush.maskHint': '红色区域=擦除范围',
   'zoom.fit': '适应窗口',
-  'paint.reimport': '重新导入',
+  'paint.reimport': '选择图片',
   'paint.next': '下一步 →',
 
   'erase.model': '模型',
@@ -69,6 +70,7 @@ export const zhCN: Messages = {
   'result.viewOriginal': '👁 按住查看原图',
   'result.zip': '🗜 下载 ZIP',
   'result.edit': '✏️ 继续编辑',
+  'result.choose': '📁 选择图片',
 
   'view.toggleOriginal': '显示原图（点击切换）',
 
@@ -133,6 +135,7 @@ export const zhCN: Messages = {
   'inference.parsing': '正在解析模型…',
   'inference.elapsed': '{stage}（已耗时 {s} 秒）',
   'inference.tileAvg': '约 {s} 秒/块',
+  'inference.erasingElapsed': '正在擦除… 已耗时 {s} 秒',
   'inference.initTimeout': '模型加载超时。模型可能对当前设备过大——请尝试使用轻量版模型。',
   'inference.error': '擦除失败：{reason}',
   'inference.emptyMask': '请先涂抹要移除的对象。',
@@ -155,6 +158,8 @@ export const zhCN: Messages = {
   'error.read': '无法读取该图片文件。',
   'error.unsupportedFormat': '不支持的图片格式',
   'error.unsupportedFormatDetail': '以下文件因格式不支持已跳过：{names}',
+  'error.resource': '设备资源不足',
+  'error.resourceDetail': '当前图片或模型占用的内存超出设备可用资源。请尝试使用更小的图片或轻量模型；如果是在 iPhone 或 iPad 上处理大图，建议改用电脑端操作。',
 
   'faq.title': '常见问题',
   'faq.q1': '收费吗？',

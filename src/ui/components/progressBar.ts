@@ -18,25 +18,45 @@ export function initProgressBar(store: Store<AppState, Action>): ProgressBar {
   let onCancel: (() => void) | null = null;
   let shownBy: 'inference' | 'download' | null = null;
   let lastPct = 0;
+  let initPct = 0;
+  let initTimer: number | null = null;
+
+  function stopInitTimer(): void {
+    if (initTimer !== null) {
+      window.clearInterval(initTimer);
+      initTimer = null;
+    }
+  }
+
+  function startInitTimer(): void {
+    stopInitTimer();
+    initPct = 4;
+    initTimer = window.setInterval(() => {
+      initPct = Math.min(28, initPct + 1);
+      renderInference();
+    }, 450);
+  }
 
   function renderInference(): void {
     const s = store.getState();
     const inf = s.inference;
     if (inf.status === 'running' && inf.total > 0) {
       el.hidden = false;
-      const pct = Math.round((inf.done / inf.total) * 100);
+      const initializing = inf.total === 1 && inf.done === 0;
+      const pct = initializing ? initPct : 30 + Math.round((inf.done / inf.total) * 70);
+      if (!initializing) stopInitTimer();
       bar.style.width = `${pct}%`;
-      label.textContent = `${inf.message ?? ''}  ${inf.done}/${inf.total}`;
+      label.textContent = initializing ? (inf.message ?? '') : `${inf.message ?? ''}  ${inf.done}/${inf.total}`;
       cancelBtn.hidden = false;
     } else if (inf.status === 'error') {
       el.hidden = false;
       label.textContent = inf.message ?? '';
       bar.style.width = '100%';
       cancelBtn.hidden = true;
-    } else if (inf.status !== 'running') {
-      el.hidden = true;
-      shownBy = null;
-      onCancel = null;
+    } else if (inf.status === 'idle' || inf.status === 'done') {
+      // Keep the bar visible between show() and the first running update.
+      // show() is called before inference dispatches its running state.
+      // Completion is hidden explicitly by the caller after the result is saved.
     }
   }
 
@@ -65,7 +85,10 @@ export function initProgressBar(store: Store<AppState, Action>): ProgressBar {
       bar.style.width = `${lastPct}%`;
       el.hidden = false;
       cancelBtn.hidden = !onCancel;
-      if (shownBy === 'inference') renderInference();
+      if (shownBy === 'inference') {
+        startInitTimer();
+        renderInference();
+      }
     },
     update(opts): void {
       if (opts.title !== undefined) label.textContent = opts.title;
@@ -79,6 +102,7 @@ export function initProgressBar(store: Store<AppState, Action>): ProgressBar {
       }
     },
     hide(): void {
+      stopInitTimer();
       el.hidden = true;
       shownBy = null;
       onCancel = null;

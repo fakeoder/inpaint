@@ -293,26 +293,30 @@ export function initInference(deps: InferenceDeps): { run: (options?: { bitmap?:
 
     active = true;
     cancelled = false;
-    const { region, tiles } = planTiles(bbox, s.maskWidth, s.maskHeight, {
-      padding: TILING_DEFAULTS.padding,
-      overlap: TILING_DEFAULTS.overlap,
-      align: TILING_DEFAULTS.align,
-      inputSize: model.inputSize,
-      fixedInput: model.fixedInput ?? false,
-    });
-
-    regionBuf = new Float32Array(region.w * region.h * 4);
-    regionW = region.w;
-    regionRect = region.rect;
-    sourceImageData = bitmapToImageData(target);
-    resultImageData = bitmapToImageData(target);
-    deps.canvas.setResult(resultImageData);
-
-    const total = tiles.length;
-    let done = 0;
-    setStatus('running', 0, total, statusLabel);
-
+    let elapsedTimer: number | null = null;
     try {
+      // Report progress before allocating full-resolution buffers. On mobile,
+      // these allocations are often the first operation that takes noticeable time.
+      setStatus('running', 0, 1, statusLabel);
+      const { region, tiles } = planTiles(bbox, s.maskWidth, s.maskHeight, {
+        padding: TILING_DEFAULTS.padding,
+        overlap: TILING_DEFAULTS.overlap,
+        align: TILING_DEFAULTS.align,
+        inputSize: model.inputSize,
+        fixedInput: model.fixedInput ?? false,
+      });
+
+      regionBuf = new Float32Array(region.w * region.h * 4);
+      regionW = region.w;
+      regionRect = region.rect;
+      sourceImageData = bitmapToImageData(target);
+      resultImageData = bitmapToImageData(target);
+      deps.canvas.setResult(resultImageData);
+
+      const total = tiles.length;
+      let done = 0;
+      setStatus('running', 0, total, statusLabel);
+
       await ensureModelDownloaded(model);
       await ensureSession(model);
       // WebGPU executes tiles serially on its queue (parallel submits just
@@ -325,14 +329,18 @@ export function initInference(deps: InferenceDeps): { run: (options?: { bitmap?:
           : TILING_DEFAULTS.concurrency;
       const overlap = TILING_DEFAULTS.overlap;
       const tRunStart = performance.now();
+      elapsedTimer = window.setInterval(() => {
+        const elapsed = Math.round((performance.now() - tRunStart) / 1000);
+        setStatus('running', done, total, deps.translate('inference.erasingElapsed', { s: elapsed }));
+      }, 1000);
 
       const runTile = (tile: Tile): Promise<void> =>
         inferTile(tile)
           .then((r) => {
             accumulateTile(regionBuf!, regionW, regionRect, tile, r.output, r.outW, r.outH, overlap);
             done++;
-            const avg = ((performance.now() - tRunStart) / 1000 / done).toFixed(1);
-            setStatus('running', done, total, deps.translate('inference.tileAvg', { s: avg }));
+            const elapsed = Math.round((performance.now() - tRunStart) / 1000);
+            setStatus('running', done, total, deps.translate('inference.erasingElapsed', { s: elapsed }));
             paintRegion();
           })
           .catch((e: Error) => {
@@ -369,10 +377,14 @@ export function initInference(deps: InferenceDeps): { run: (options?: { bitmap?:
         deps.showMessage(deps.translate('model.download.title'), deps.translate(key));
       } else {
         const message = e instanceof Error ? e.message : String(e);
-        setStatus('error', undefined, undefined, message);
-        deps.showMessage(deps.translate('inference.error'), message);
+        const detail = /memory|allocation|out of memory|资源|内存/i.test(message)
+          ? deps.translate('error.resourceDetail')
+          : message;
+        setStatus('error', undefined, undefined, detail);
+        deps.showMessage(deps.translate('inference.error'), detail);
       }
     } finally {
+      if (elapsedTimer !== null) window.clearInterval(elapsedTimer);
       active = false;
       pending.clear();
       pendingResolvers.clear();

@@ -103,6 +103,13 @@
               <button id="btn-zoom-fit" class="zoom-fit-btn" type="button" data-i18n-title="zoom.fit">⤢</button>
             </div>
             <div id="brush-cursor" hidden></div>
+            <div id="progress" class="floating" hidden>
+              <div id="progress-label" class="progress-label"></div>
+              <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+              <div class="progress-actions">
+                <button id="progress-cancel" class="small-btn" type="button" data-i18n="inference.cancel">Cancel</button>
+              </div>
+            </div>
           </div>
 
           <!-- Controls live BELOW the preview in normal flow (nothing overlaps) -->
@@ -130,7 +137,8 @@
                   <input id="brush-size" type="range" min="4" max="200" step="1" value="40" />
                   <output id="brush-size-value" for="brush-size">40</output>
                 </label>
-                <button id="btn-reimport" class="small-btn" type="button" data-i18n="paint.reimport">📁 Re-import</button>
+                <span class="mask-hint" data-i18n="brush.maskHint">Red = erase</span>
+                <button id="btn-reimport" class="small-btn" type="button" data-i18n="paint.reimport">📁 Choose image</button>
                 <button id="tool-clear" class="small-btn" type="button" data-i18n="tool.clear">✕ Clear</button>
               </div>
               <div class="paint-actions">
@@ -144,16 +152,9 @@
               <button id="btn-export" class="result-btn primary" type="button" data-i18n="export.download">⬇ Download</button>
               <button id="btn-batch-export" class="result-btn" type="button" data-i18n="result.zip">🗜 Download ZIP</button>
               <button id="btn-edit-again" class="result-btn" type="button" data-i18n="result.edit">✏️ Edit again</button>
+              <button id="btn-result-import" class="result-btn" type="button" data-i18n="result.choose">📁 Choose image</button>
             </div>
 
-            <!-- Progress -->
-            <div id="progress" class="floating" hidden>
-              <div id="progress-label" class="progress-label"></div>
-              <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
-              <div class="progress-actions">
-                <button id="progress-cancel" class="small-btn" type="button" data-i18n="inference.cancel">Cancel</button>
-              </div>
-            </div>
           </div>
         </section>
 
